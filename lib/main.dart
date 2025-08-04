@@ -6,7 +6,10 @@ class TodoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+<<<<<<< HEAD
       debugShowCheckedModeBanner: false,  // เพิ่มตรงนี้
+=======
+>>>>>>> main
       title: 'Todo List',
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Color(0xFF1E1E1E),
