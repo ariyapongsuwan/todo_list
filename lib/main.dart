@@ -6,12 +6,8 @@ class TodoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-<<<<<<< HEAD
-      debugShowCheckedModeBanner: false,  // เพิ่มตรงนี้
-=======
->>>>>>> main
+      debugShowCheckedModeBanner: false,  // ซ่อน debug banner
       title: 'Todo List',
-      debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Color(0xFF1E1E1E),
         primaryColor: Colors.blueAccent,
@@ -33,26 +29,25 @@ class TodoHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-  title: Text('Todo List'),
-  centerTitle: true,
-  backgroundColor: Colors.transparent,
-  elevation: 0,
-  actions: [
-    IconButton(
-      icon: Icon(Icons.search),
-      onPressed: () {},
-    )
-  ],
-  leading: Padding(
-    padding: const EdgeInsets.all(8.0), // เว้นขอบหน่อยให้สวย
-    child: CircleAvatar(
-      radius: 50,
-      backgroundColor: Colors.blueAccent,
-      child: Icon(Icons.person, color: Colors.white, size: 40),
-    ),
-  ),
-),
-
+        title: Text('Todo List'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {},
+          )
+        ],
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0), // เว้นขอบหน่อยให้สวย
+          child: CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.blueAccent,
+            child: Icon(Icons.person, color: Colors.white, size: 40),
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
