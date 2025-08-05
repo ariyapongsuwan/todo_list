@@ -11,6 +11,7 @@ class TodoApp extends StatelessWidget {
 =======
 >>>>>>> main
       title: 'Todo List',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Color(0xFF1E1E1E),
         primaryColor: Colors.blueAccent,
