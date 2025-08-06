@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'todo_page.dart'; // เชื่อม todo_page.dart
 
 void main() {
   runApp(TodoApp());
@@ -13,6 +14,8 @@ class TodoApp extends StatefulWidget {
 class _TodoAppState extends State<TodoApp> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  int _selectedIndex = 0;
 
   final List<String> tasks = [
     'Workout at 6am',
@@ -73,6 +76,45 @@ class _TodoAppState extends State<TodoApp> {
     );
   }
 
+  List<Widget> get _pages => [
+        _homePage(),
+        TodoPage(), // <-- เชื่อมกับ todo_page.dart
+        _settingsPage(),
+      ];
+
+  Widget _homePage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          LoginCard(),
+          SizedBox(height: 20),
+          ProfileSection(),
+          SizedBox(height: 20),
+          ...tasks.map((task) => TodoCard(task: task)).toList(),
+          SizedBox(height: 20),
+          GlowButton(
+            text: 'Add Task',
+            icon: Icons.add,
+            onPressed: () {},
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _showNotification,
+            child: Text('แสดงแจ้งเตือน'),
+          ),
+          SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _settingsPage() {
+    return Center(
+      child: Text("Settings Page", style: TextStyle(fontSize: 18)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -84,50 +126,19 @@ class _TodoAppState extends State<TodoApp> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Todo List'),
+          title: Text('Todo App'),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.search),
-              onPressed: () {},
-            )
-          ],
-          leading: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.blueAccent,
-              child: Icon(Icons.person, color: Colors.white, size: 40),
-            ),
-          ),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              LoginCard(),
-              SizedBox(height: 20),
-              ProfileSection(),
-              SizedBox(height: 20),
-              ...tasks.map((task) => TodoCard(task: task)).toList(),
-              SizedBox(height: 20),
-              GlowButton(
-                text: 'Add Task',
-                icon: Icons.add,
-                onPressed: () {},
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _showNotification,
-                child: Text('แสดงแจ้งเตือน'),
-              ),
-              SizedBox(height: 16),
-            ],
-          ),
-        ),
+        body: _pages[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (int index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
           backgroundColor: Color(0xFF2C2C2C),
           selectedItemColor: Colors.blueAccent,
           unselectedItemColor: Colors.grey,
