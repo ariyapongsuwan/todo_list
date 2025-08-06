@@ -17,6 +17,9 @@ class _TodoAppState extends State<TodoApp> {
 
   int _selectedIndex = 0;
 
+  bool _isLoggedIn = false; // สถานะล็อกอิน
+  String _userEmail = "";
+
   final List<String> tasks = [
     'Workout at 6am',
     'Meeting at 10am',
@@ -41,7 +44,8 @@ class _TodoAppState extends State<TodoApp> {
 
     flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
+      onDidReceiveNotificationResponse:
+          (NotificationResponse notificationResponse) async {
         final payload = notificationResponse.payload;
         if (payload != null) {
           print('Notification payload: $payload');
@@ -78,7 +82,7 @@ class _TodoAppState extends State<TodoApp> {
 
   List<Widget> get _pages => [
         _homePage(),
-        TodoPage(), // <-- เชื่อมกับ todo_page.dart
+        TodoPage(), // เชื่อมกับ todo_page.dart
         _settingsPage(),
       ];
 
@@ -87,23 +91,34 @@ class _TodoAppState extends State<TodoApp> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          LoginCard(),
+          _isLoggedIn
+              ? ProfileSection(userEmail: _userEmail)
+              : LoginCard(
+                  onLoginSuccess: (email) {
+                    setState(() {
+                      _isLoggedIn = true;
+                      _userEmail = email;
+                    });
+                  },
+                ),
           SizedBox(height: 20),
-          ProfileSection(),
-          SizedBox(height: 20),
-          ...tasks.map((task) => TodoCard(task: task)).toList(),
-          SizedBox(height: 20),
-          GlowButton(
-            text: 'Add Task',
-            icon: Icons.add,
-            onPressed: () {},
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _showNotification,
-            child: Text('แสดงแจ้งเตือน'),
-          ),
-          SizedBox(height: 16),
+          if (_isLoggedIn) ...[
+            ...tasks.map((task) => TodoCard(task: task)).toList(),
+            SizedBox(height: 20),
+            GlowButton(
+              text: 'ใหม่',
+              icon: Icons.add,
+              onPressed: () {
+                _showAddTaskDialog();
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _showNotification,
+              child: Text('แสดงแจ้งเตือน'),
+            ),
+            SizedBox(height: 16),
+          ]
         ],
       ),
     );
@@ -153,19 +168,100 @@ class _TodoAppState extends State<TodoApp> {
   }
 }
 
-class LoginCard extends StatelessWidget {
+class LoginCard extends StatefulWidget {
+  final Function(String email) onLoginSuccess;
+
+  const LoginCard({required this.onLoginSuccess});
+
+  @override
+  _LoginCardState createState() => _LoginCardState();
+}
+
+class _LoginCardState extends State<LoginCard> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  String? _errorMessage;
+
+  void _handleLogin() {
+  final email = _emailController.text.trim();
+  final password = _passwordController.text;
+
+  if (email.isEmpty || password.isEmpty) {
+    setState(() {
+      _errorMessage = 'กรุณากรอกอีเมลและรหัสผ่านให้ครบ';
+    });
+    return;
+  }
+
+  // ✅ แค่กรอกครบก็ถือว่าล็อกอินสำเร็จ
+  widget.onLoginSuccess(email);
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Card(
       color: Colors.grey[850],
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text('Welcome Back!', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            Text('Login to continue', style: TextStyle(color: Colors.grey)),
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Text('Welcome Back!', style: TextStyle(fontSize: 18)),
+              SizedBox(height: 8),
+              Text('Login to continue', style: TextStyle(color: Colors.grey)),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  labelStyle: TextStyle(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueAccent),
+                  ),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              SizedBox(height: 12),
+              TextFormField(
+                controller: _passwordController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  labelStyle: TextStyle(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueAccent),
+                  ),
+                ),
+                obscureText: true,
+              ),
+              SizedBox(height: 12),
+              if (_errorMessage != null)
+                Text(
+                  _errorMessage!,
+                  style: TextStyle(color: Colors.redAccent),
+                ),
+              SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: _handleLogin,
+                child: Text('ลงชื่อเข้าใช้'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -173,6 +269,10 @@ class LoginCard extends StatelessWidget {
 }
 
 class ProfileSection extends StatelessWidget {
+  final String userEmail;
+
+  const ProfileSection({required this.userEmail});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -191,7 +291,7 @@ class ProfileSection extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('User Name', style: TextStyle(fontSize: 16)),
+              Text(userEmail, style: TextStyle(fontSize: 16)),
               Text('Your profile summary', style: TextStyle(color: Colors.grey)),
             ],
           )
