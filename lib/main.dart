@@ -54,7 +54,10 @@ class TodoApp extends StatelessWidget {
         primarySwatch: Colors.teal,
         scaffoldBackgroundColor: const Color(0xFF1F1F1F),
         cardColor: const Color(0xFF2D2D2D),
-        dialogBackgroundColor: const Color(0xFF2E2E2E),
+        dialogTheme: const DialogThemeData(
+  backgroundColor: Color(0xFF2E2E2E),
+),
+
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.teal,
@@ -140,7 +143,8 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (_, setStateDialog) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(isEditing ? 'แก้ไขงาน' : 'เพิ่มงานใหม่'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -156,11 +160,10 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      selectedDateTime != null
-                          ? '${selectedDateTime!.toLocal()}'.substring(0, 16)
-                          : 'ไม่กำหนดเวลา',
+                      selectedDateTime?.toLocal().toString().substring(0, 16) ?? 'ไม่กำหนดเวลา',
                       style: const TextStyle(color: Colors.white70),
                     ),
+
                   ),
                   TextButton.icon(
                     icon: const Icon(Icons.edit_calendar, color: Colors.teal),
@@ -168,7 +171,8 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () async {
                       final date = await showDatePicker(
                         context: context,
-                        initialDate: selectedDateTime ?? DateTime.now().add(const Duration(minutes: 1)),
+                        initialDate: selectedDateTime ??
+                            DateTime.now().add(const Duration(minutes: 1)),
                         firstDate: DateTime.now(),
                         lastDate: DateTime(2100),
                       );
@@ -227,15 +231,18 @@ class _HomePageState extends State<HomePage> {
       itemBuilder: (_, index) {
         final task = tasks[index];
         return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 4,
           color: Theme.of(context).cardColor,
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             title: Text(
               task.title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             subtitle: task.dateTime != null
                 ? Text(
@@ -279,31 +286,11 @@ class _HomePageState extends State<HomePage> {
               },
             )
           else
-<<<<<<< HEAD
-TextButton(
-  onPressed: () {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text('เข้าสู่ระบบ'),
-        content: LoginCard(onLoginSuccess: _handleLogin),
-      ),
-    );
-  },
-  child: const Text('Login', style: TextStyle(color: Colors.white)),
-),
-
-
-=======
->>>>>>> f0095817f2568dc577a6473c755383b328fecac7
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white10, // สีพื้นหลังโปร่งแสง
+                  color: Colors.white10,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
@@ -318,7 +305,8 @@ TextButton(
                     showDialog(
                       context: context,
                       builder: (_) => AlertDialog(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         title: const Text('เข้าสู่ระบบ'),
                         content: LoginCard(onLoginSuccess: _handleLogin),
                       ),
@@ -331,89 +319,71 @@ TextButton(
                 ),
               ),
             ),
-
-<<<<<<< HEAD
-        child: _buildTaskList(),
-
-
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),child: _buildTaskList(),
- child: _isLoggedIn
-=======
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: _isLoggedIn
->>>>>>> f0095817f2568dc577a6473c755383b328fecac7
-            ? _buildTaskList()
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // หากต้องการแสดงจำนวนงาน สามารถเรียก _buildTaskCount() ได้ที่นี่
+                  Expanded(child: _buildTaskList()),
+                ],
+              )
             : Center(
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(33, 255, 255, 255), // พื้นหลังโปร่งแสง
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Text(
-                      'ยินดีต้อนรับสู่ Todo App',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(3.5, 3.0),
-                            blurRadius: 0.5,
-                            color: Color.fromARGB(255, 0, 0, 0),
-                          ),
-                        ],
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(33, 255, 255, 255),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'กรุณาเข้าสู่ระบบก่อนใช้งาน',
-                      style: TextStyle(
-                        color: Color.fromARGB(136, 255, 43, 43),
-                        fontSize: 16,
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        'ยินดีต้อนรับสู่ Todo App',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(3.5, 3.0),
+                              blurRadius: 0.5,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                      SizedBox(height: 8),
+                      Text(
+                        'กรุณาเข้าสู่ระบบก่อนใช้งาน',
+                        style: TextStyle(
+                          color: Color.fromARGB(136, 255, 43, 43),
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
       ),
-
-<<<<<<< HEAD
-
-floatingActionButton: _isLoggedIn
-    ? FloatingActionButton(
-        onPressed: _showTaskDialog,
-        child: const Icon(Icons.add),
-      )
-    : null,
-
-=======
       floatingActionButton: _isLoggedIn
           ? FloatingActionButton(
               onPressed: () => _showTaskDialog(),
               child: const Icon(Icons.add),
             )
           : null,
->>>>>>> f0095817f2568dc577a6473c755383b328fecac7
     );
   }
 }
