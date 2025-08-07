@@ -279,21 +279,23 @@ class _HomePageState extends State<HomePage> {
               },
             )
           else
-<<<<<<< HEAD
-            TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    title: const Text('เข้าสู่ระบบ'),
-                    content: LoginCard(onLoginSuccess: _handleLogin),
-                  ),
-                );
-              },
-              child: const Text('Login', style: TextStyle(color: Colors.white)),
-            ),
-=======
+TextButton(
+  onPressed: () {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text('เข้าสู่ระบบ'),
+        content: LoginCard(onLoginSuccess: _handleLogin),
+      ),
+    );
+  },
+  child: const Text('Login', style: TextStyle(color: Colors.white)),
+),
+
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Container(
@@ -327,16 +329,14 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
->>>>>>> feature/ariya-feature1
+        child: _buildTaskList(),
+
+
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
-<<<<<<< HEAD
-        child: _buildTaskList(),
-      ),
-=======
-        child: _isLoggedIn
+        padding: const EdgeInsets.all(8.0),child: _buildTaskList(),
+ child: _isLoggedIn
             ? _buildTaskList()
             : Center(
                 child: Column(
@@ -374,13 +374,13 @@ class _HomePageState extends State<HomePage> {
         ),
 
 
->>>>>>> feature/ariya-feature1
-      floatingActionButton: _isLoggedIn
-          ? FloatingActionButton(
-              onPressed: () => _showTaskDialog(),
-              child: const Icon(Icons.add),
-            )
-          : null,
+floatingActionButton: _isLoggedIn
+    ? FloatingActionButton(
+        onPressed: _showTaskDialog,
+        child: const Icon(Icons.add),
+      )
+    : null,
+
     );
   }
 }
