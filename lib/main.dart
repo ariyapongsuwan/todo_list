@@ -279,6 +279,7 @@ class _HomePageState extends State<HomePage> {
               },
             )
           else
+<<<<<<< HEAD
 TextButton(
   onPressed: () {
     showDialog(
@@ -296,6 +297,8 @@ TextButton(
 ),
 
 
+=======
+>>>>>>> f0095817f2568dc577a6473c755383b328fecac7
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Container(
@@ -329,6 +332,7 @@ TextButton(
               ),
             ),
 
+<<<<<<< HEAD
         child: _buildTaskList(),
 
 
@@ -337,8 +341,28 @@ TextButton(
       body: Padding(
         padding: const EdgeInsets.all(8.0),child: _buildTaskList(),
  child: _isLoggedIn
+=======
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: _isLoggedIn
+>>>>>>> f0095817f2568dc577a6473c755383b328fecac7
             ? _buildTaskList()
             : Center(
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(33, 255, 255, 255), // พื้นหลังโปร่งแสง
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
@@ -352,13 +376,12 @@ TextButton(
                           Shadow(
                             offset: Offset(3.5, 3.0),
                             blurRadius: 0.5,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                        ),
-                      ],
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-
                     SizedBox(height: 8),
                     Text(
                       'กรุณาเข้าสู่ระบบก่อนใช้งาน',
@@ -371,8 +394,10 @@ TextButton(
                   ],
                 ),
               ),
-        ),
+            ),
+      ),
 
+<<<<<<< HEAD
 
 floatingActionButton: _isLoggedIn
     ? FloatingActionButton(
@@ -381,6 +406,14 @@ floatingActionButton: _isLoggedIn
       )
     : null,
 
+=======
+      floatingActionButton: _isLoggedIn
+          ? FloatingActionButton(
+              onPressed: () => _showTaskDialog(),
+              child: const Icon(Icons.add),
+            )
+          : null,
+>>>>>>> f0095817f2568dc577a6473c755383b328fecac7
     );
   }
 }
