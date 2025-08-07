@@ -319,6 +319,19 @@ class _HomePageState extends State<HomePage> {
         child: _isLoggedIn
             ? _buildTaskList()
             : Center(
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(33, 255, 255, 255), // พื้นหลังโปร่งแสง
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
@@ -332,13 +345,12 @@ class _HomePageState extends State<HomePage> {
                           Shadow(
                             offset: Offset(3.5, 3.0),
                             blurRadius: 0.5,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                        ),
-                      ],
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-
                     SizedBox(height: 8),
                     Text(
                       'กรุณาเข้าสู่ระบบก่อนใช้งาน',
@@ -351,7 +363,8 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-        ),
+            ),
+      ),
 
       floatingActionButton: _isLoggedIn
           ? FloatingActionButton(
