@@ -83,9 +83,8 @@ class TodoApp extends StatelessWidget {
 class Task {
   String title;
   DateTime? dateTime;
-  bool isDone;  // สถานะทำแล้วหรือยัง
 
-  Task(this.title, {this.dateTime, this.isDone = false});
+  Task(this.title, {this.dateTime});
 }
 
 class HomePage extends StatefulWidget {
@@ -157,8 +156,9 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      selectedDateTime?.toLocal().toString().substring(0, 16) ??
-                          'ไม่กำหนดเวลา',
+                      selectedDateTime != null
+                          ? '${selectedDateTime!.toLocal()}'.substring(0, 16)
+                          : 'ไม่กำหนดเวลา',
                       style: const TextStyle(color: Colors.white70),
                     ),
                   ),
@@ -168,8 +168,7 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () async {
                       final date = await showDatePicker(
                         context: context,
-                        initialDate:
-                            selectedDateTime ?? DateTime.now().add(const Duration(minutes: 1)),
+                        initialDate: selectedDateTime ?? DateTime.now().add(const Duration(minutes: 1)),
                         firstDate: DateTime.now(),
                         lastDate: DateTime(2100),
                       );
@@ -222,140 +221,44 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildTaskCount() {
-    final doneCount = tasks.where((t) => t.isDone).length;
-    final todoCount = tasks.length - doneCount;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-      child: Text(
-        'รวม ${tasks.length} โน้ต: ยังไม่ทำ $todoCount, ทำแล้ว $doneCount',
-        style: const TextStyle(
-          color: Colors.white70,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
   Widget _buildTaskList() {
-    if (tasks.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.assignment_turned_in,
-                size: 80, color: Colors.white24),
-            const SizedBox(height: 16),
-            const Text(
-              'ยังไม่มีงานในรายการ',
-              style: TextStyle(fontSize: 24, color: Colors.white70),
+    return ListView.builder(
+      itemCount: _isLoggedIn ? tasks.length : 0,
+      itemBuilder: (_, index) {
+        final task = tasks[index];
+        return Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 4,
+          color: Theme.of(context).cardColor,
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            title: Text(
+              task.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'เริ่มเพิ่มงานของคุณเพื่อไม่ลืมสิ่งสำคัญ',
-              style: TextStyle(fontSize: 16, color: Colors.white38),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      );
-    }
-
-    final todoTasks = tasks.where((task) => !task.isDone).toList();
-    final doneTasks = tasks.where((task) => task.isDone).toList();
-
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      children: [
-        if (todoTasks.isNotEmpty) ...[
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'ยังไม่ทำ',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white70,
-              ),
+            subtitle: task.dateTime != null
+                ? Text(
+                    'แจ้งเตือน: ${task.dateTime!.toLocal().toString().substring(0, 16)}',
+                    style: const TextStyle(fontSize: 13, color: Colors.white70),
+                  )
+                : null,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.amber),
+                  onPressed: () => _showTaskDialog(editIndex: index),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  onPressed: () => _deleteTask(index),
+                ),
+              ],
             ),
           ),
-          ...todoTasks.map((task) {
-            final index = tasks.indexOf(task);
-            return _buildTaskTile(task, index);
-          }),
-        ],
-        if (doneTasks.isNotEmpty) ...[
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'ทำแล้ว',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.greenAccent,
-              ),
-            ),
-          ),
-          ...doneTasks.map((task) {
-            final index = tasks.indexOf(task);
-            return _buildTaskTile(task, index);
-          }),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildTaskTile(Task task, int index) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 4,
-      color: Theme.of(context).cardColor,
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        title: Text(
-          task.title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            decoration:
-                task.isDone ? TextDecoration.lineThrough : TextDecoration.none,
-            color: task.isDone ? Colors.white38 : Colors.white,
-          ),
-        ),
-        subtitle: task.dateTime != null
-            ? Text(
-                'แจ้งเตือน: ${task.dateTime!.toLocal().toString().substring(0, 16)}',
-                style: const TextStyle(fontSize: 13, color: Colors.white70),
-              )
-            : null,
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.amber),
-              onPressed: () => _showTaskDialog(editIndex: index),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.redAccent),
-              onPressed: () => _deleteTask(index),
-            ),
-            IconButton(
-              icon: Icon(
-                task.isDone ? Icons.check_box : Icons.check_box_outline_blank,
-                color: task.isDone ? Colors.greenAccent : Colors.white70,
-              ),
-              onPressed: () {
-                setState(() {
-                  tasks[index].isDone = !tasks[index].isDone;
-                });
-              },
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -376,11 +279,31 @@ class _HomePageState extends State<HomePage> {
               },
             )
           else
+<<<<<<< HEAD
+TextButton(
+  onPressed: () {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text('เข้าสู่ระบบ'),
+        content: LoginCard(onLoginSuccess: _handleLogin),
+      ),
+    );
+  },
+  child: const Text('Login', style: TextStyle(color: Colors.white)),
+),
+
+
+=======
+>>>>>>> f0095817f2568dc577a6473c755383b328fecac7
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white10,
+                  color: Colors.white10, // สีพื้นหลังโปร่งแสง
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
@@ -395,8 +318,7 @@ class _HomePageState extends State<HomePage> {
                     showDialog(
                       context: context,
                       builder: (_) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         title: const Text('เข้าสู่ระบบ'),
                         content: LoginCard(onLoginSuccess: _handleLogin),
                       ),
@@ -409,71 +331,89 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+
+<<<<<<< HEAD
+        child: _buildTaskList(),
+
+
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),child: _buildTaskList(),
+ child: _isLoggedIn
+=======
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: _isLoggedIn
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTaskCount(),
-                  Expanded(child: _buildTaskList()),
-                ],
-              )
+>>>>>>> f0095817f2568dc577a6473c755383b328fecac7
+            ? _buildTaskList()
             : Center(
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(33, 255, 255, 255),
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(33, 255, 255, 255), // พื้นหลังโปร่งแสง
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text(
+                      'ยินดีต้อนรับสู่ Todo App',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(3.5, 3.0),
+                            blurRadius: 0.5,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Text(
-                        'ยินดีต้อนรับสู่ Todo App',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(3.5, 3.0),
-                              blurRadius: 0.5,
-                              color: Color.fromARGB(255, 0, 0, 0),
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'กรุณาเข้าสู่ระบบก่อนใช้งาน',
+                      style: TextStyle(
+                        color: Color.fromARGB(136, 255, 43, 43),
+                        fontSize: 16,
                       ),
-                      SizedBox(height: 8),
-                      Text(
-                        'กรุณาเข้าสู่ระบบก่อนใช้งาน',
-                        style: TextStyle(
-                          color: Color.fromARGB(136, 255, 43, 43),
-                          fontSize: 16,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
+            ),
       ),
+
+<<<<<<< HEAD
+
+floatingActionButton: _isLoggedIn
+    ? FloatingActionButton(
+        onPressed: _showTaskDialog,
+        child: const Icon(Icons.add),
+      )
+    : null,
+
+=======
       floatingActionButton: _isLoggedIn
           ? FloatingActionButton(
               onPressed: () => _showTaskDialog(),
               child: const Icon(Icons.add),
             )
           : null,
+>>>>>>> f0095817f2568dc577a6473c755383b328fecac7
     );
   }
 }
