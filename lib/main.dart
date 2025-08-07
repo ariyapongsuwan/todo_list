@@ -279,6 +279,7 @@ class _HomePageState extends State<HomePage> {
               },
             )
           else
+<<<<<<< HEAD
             TextButton(
               onPressed: () {
                 showDialog(
@@ -292,12 +293,88 @@ class _HomePageState extends State<HomePage> {
               },
               child: const Text('Login', style: TextStyle(color: Colors.white)),
             ),
+=======
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white10, // สีพื้นหลังโปร่งแสง
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        title: const Text('เข้าสู่ระบบ'),
+                        content: LoginCard(onLoginSuccess: _handleLogin),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Login',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+
+>>>>>>> feature/ariya-feature1
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
+<<<<<<< HEAD
         child: _buildTaskList(),
       ),
+=======
+        child: _isLoggedIn
+            ? _buildTaskList()
+            : Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text(
+                      'ยินดีต้อนรับสู่ Todo App',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(3.5, 3.0),
+                            blurRadius: 0.5,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                    SizedBox(height: 8),
+                    Text(
+                      'กรุณาเข้าสู่ระบบก่อนใช้งาน',
+                      style: TextStyle(
+                        color: Color.fromARGB(136, 255, 43, 43),
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+        ),
+
+
+>>>>>>> feature/ariya-feature1
       floatingActionButton: _isLoggedIn
           ? FloatingActionButton(
               onPressed: () => _showTaskDialog(),
