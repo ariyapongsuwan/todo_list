@@ -279,21 +279,6 @@ class _HomePageState extends State<HomePage> {
               },
             )
           else
-      HEAD
-            TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    title: const Text('เข้าสู่ระบบ'),
-                    content: LoginCard(onLoginSuccess: _handleLogin),
-                  ),
-                );
-              },
-              child: const Text('Login', style: TextStyle(color: Colors.white)),
-            ),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Container(
@@ -327,17 +312,26 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-feature/ariya-feature1
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-HEAD
-        child: _buildTaskList(),
-      ),
         child: _isLoggedIn
             ? _buildTaskList()
             : Center(
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(33, 255, 255, 255), // พื้นหลังโปร่งแสง
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
@@ -351,13 +345,12 @@ HEAD
                           Shadow(
                             offset: Offset(3.5, 3.0),
                             blurRadius: 0.5,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                        ),
-                      ],
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-
                     SizedBox(height: 8),
                     Text(
                       'กรุณาเข้าสู่ระบบก่อนใช้งาน',
@@ -370,10 +363,9 @@ HEAD
                   ],
                 ),
               ),
-        ),
+            ),
+      ),
 
-
->>>>>>> feature/ariya-feature1
       floatingActionButton: _isLoggedIn
           ? FloatingActionButton(
               onPressed: () => _showTaskDialog(),
