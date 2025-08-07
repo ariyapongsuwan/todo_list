@@ -1,342 +1,367 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'todo_page.dart'; // เชื่อม todo_page.dart
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
-void main() {
-  runApp(TodoApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
+
+  await NotificationService().init();
+  runApp(const TodoApp());
 }
 
-class TodoApp extends StatefulWidget {
-  @override
-  State<TodoApp> createState() => _TodoAppState();
-}
+class NotificationService {
+  static final _notifications = FlutterLocalNotificationsPlugin();
 
-class _TodoAppState extends State<TodoApp> {
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
-  int _selectedIndex = 0;
-
-  bool _isLoggedIn = false; // สถานะล็อกอิน
-  String _userEmail = "";
-
-  final List<String> tasks = [
-    'Workout at 6am',
-    'Meeting at 10am',
-    'Meeting a Book',
-    'Read a Book',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    const DarwinInitializationSettings initializationSettingsIOS =
-        DarwinInitializationSettings();
-
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
-
-    flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse:
-          (NotificationResponse notificationResponse) async {
-        final payload = notificationResponse.payload;
-        if (payload != null) {
-          print('Notification payload: $payload');
-        }
-      },
-    );
+  Future<void> init() async {
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const settings = InitializationSettings(android: android);
+    await _notifications.initialize(settings);
   }
 
-  Future<void> _showNotification() async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'channel_id',
-      'channel_name',
-      channelDescription: 'description',
-      importance: Importance.max,
-      priority: Priority.high,
-      ticker: 'ticker',
-    );
-
-    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
-
-    const NotificationDetails platformDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'แจ้งเตือน Todo',
-      'คุณมีงานที่ต้องทำในวันนี้',
-      platformDetails,
-      payload: 'ข้อมูลเพิ่มเติม',
-    );
-  }
-
-  List<Widget> get _pages => [
-        _homePage(),
-        TodoPage(), // เชื่อมกับ todo_page.dart
-        _settingsPage(),
-      ];
-
-  Widget _homePage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          _isLoggedIn
-              ? ProfileSection(userEmail: _userEmail)
-              : LoginCard(
-                  onLoginSuccess: (email) {
-                    setState(() {
-                      _isLoggedIn = true;
-                      _userEmail = email;
-                    });
-                  },
-                ),
-          SizedBox(height: 20),
-          if (_isLoggedIn) ...[
-            ...tasks.map((task) => TodoCard(task: task)).toList(),
-            SizedBox(height: 20),
-            GlowButton(
-              text: 'ใหม่',
-              icon: Icons.add,
-              onPressed: () {
-                _showAddTaskDialog();
-              },
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _showNotification,
-              child: Text('แสดงแจ้งเตือน'),
-            ),
-            SizedBox(height: 16),
-          ]
-        ],
+  Future<void> scheduleNotification(String title, DateTime dateTime) async {
+    await _notifications.zonedSchedule(
+      dateTime.hashCode,
+      title,
+      'ถึงเวลาทำ: $title',
+      tz.TZDateTime.from(dateTime, tz.local),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'todo_channel',
+          'Todo Channel',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
       ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
+}
 
-  Widget _settingsPage() {
-    return Center(
-      child: Text("Settings Page", style: TextStyle(fontSize: 18)),
-    );
-  }
+class TodoApp extends StatelessWidget {
+  const TodoApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Todo List',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Color(0xFF1E1E1E),
-        primaryColor: Colors.blueAccent,
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Todo App'),
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+      title: 'Todo App',
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.teal,
+        scaffoldBackgroundColor: const Color(0xFF1F1F1F),
+        cardColor: const Color(0xFF2D2D2D),
+        dialogBackgroundColor: const Color(0xFF2E2E2E),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.teal,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         ),
-        body: _pages[_selectedIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: (int index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
-          backgroundColor: Color(0xFF2C2C2C),
-          selectedItemColor: Colors.blueAccent,
-          unselectedItemColor: Colors.grey,
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Tasks'),
-            BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+        inputDecorationTheme: const InputDecorationTheme(
+          filled: true,
+          fillColor: Color(0xFF3A3A3A),
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          labelStyle: TextStyle(color: Colors.white70),
+          hintStyle: TextStyle(color: Colors.white38),
+        ),
+      ),
+      home: const HomePage(),
+    );
+  }
+}
+
+class Task {
+  String title;
+  DateTime? dateTime;
+
+  Task(this.title, {this.dateTime});
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<Task> tasks = [];
+  bool _isLoggedIn = false;
+
+  void _addTask(String taskTitle, DateTime? dateTime) {
+    final newTask = Task(taskTitle, dateTime: dateTime);
+    setState(() => tasks.add(newTask));
+
+    if (dateTime != null) {
+      NotificationService().scheduleNotification(taskTitle, dateTime);
+    }
+  }
+
+  void _editTask(int index, String newTitle, DateTime? newDateTime) {
+    setState(() {
+      tasks[index].title = newTitle;
+      tasks[index].dateTime = newDateTime;
+    });
+
+    if (newDateTime != null) {
+      NotificationService().scheduleNotification(newTitle, newDateTime);
+    }
+  }
+
+  void _deleteTask(int index) {
+    setState(() => tasks.removeAt(index));
+  }
+
+  void _handleLogin(String email) {
+    setState(() => _isLoggedIn = true);
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('ยินดีต้อนรับ $email')));
+  }
+
+  void _showTaskDialog({int? editIndex}) {
+    final isEditing = editIndex != null;
+    final taskTitleController = TextEditingController(
+        text: isEditing ? tasks[editIndex].title : '');
+    DateTime? selectedDateTime =
+        isEditing ? tasks[editIndex].dateTime : null;
+
+    showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (_, setStateDialog) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(isEditing ? 'แก้ไขงาน' : 'เพิ่มงานใหม่'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: taskTitleController,
+                decoration: const InputDecoration(hintText: 'กรอกงานของคุณ'),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(Icons.calendar_month, color: Colors.white54),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      selectedDateTime != null
+                          ? '${selectedDateTime!.toLocal()}'.substring(0, 16)
+                          : 'ไม่กำหนดเวลา',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.edit_calendar, color: Colors.teal),
+                    label: const Text('เลือกเวลา'),
+                    onPressed: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDateTime ?? DateTime.now().add(const Duration(minutes: 1)),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                      );
+                      if (date != null) {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(
+                              selectedDateTime ?? DateTime.now()),
+                        );
+                        if (time != null) {
+                          setStateDialog(() {
+                            selectedDateTime = DateTime(
+                              date.year,
+                              date.month,
+                              date.day,
+                              time.hour,
+                              time.minute,
+                            );
+                          });
+                        }
+                      }
+                    },
+                  )
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text('ยกเลิก'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              child: const Text('บันทึก'),
+              onPressed: () {
+                final title = taskTitleController.text.trim();
+                if (title.isNotEmpty) {
+                  if (isEditing) {
+                    _editTask(editIndex, title, selectedDateTime);
+                  } else {
+                    _addTask(title, selectedDateTime);
+                  }
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildTaskList() {
+    return ListView.builder(
+      itemCount: _isLoggedIn ? tasks.length : 0,
+      itemBuilder: (_, index) {
+        final task = tasks[index];
+        return Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 4,
+          color: Theme.of(context).cardColor,
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            title: Text(
+              task.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            subtitle: task.dateTime != null
+                ? Text(
+                    'แจ้งเตือน: ${task.dateTime!.toLocal().toString().substring(0, 16)}',
+                    style: const TextStyle(fontSize: 13, color: Colors.white70),
+                  )
+                : null,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.amber),
+                  onPressed: () => _showTaskDialog(editIndex: index),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  onPressed: () => _deleteTask(index),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Todo App'),
+        actions: [
+          if (_isLoggedIn)
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () {
+                setState(() {
+                  _isLoggedIn = false;
+                  tasks.clear();
+                });
+              },
+            )
+          else
+            TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    title: const Text('เข้าสู่ระบบ'),
+                    content: LoginCard(onLoginSuccess: _handleLogin),
+                  ),
+                );
+              },
+              child: const Text('Login', style: TextStyle(color: Colors.white)),
+            ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: _buildTaskList(),
+      ),
+      floatingActionButton: _isLoggedIn
+          ? FloatingActionButton(
+              onPressed: () => _showTaskDialog(),
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
 }
 
 class LoginCard extends StatefulWidget {
-  final Function(String email) onLoginSuccess;
-
-  const LoginCard({required this.onLoginSuccess});
+  final void Function(String email) onLoginSuccess;
+  const LoginCard({super.key, required this.onLoginSuccess});
 
   @override
-  _LoginCardState createState() => _LoginCardState();
+  State<LoginCard> createState() => _LoginCardState();
 }
 
 class _LoginCardState extends State<LoginCard> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
+  final TextEditingController _emailController =
+      TextEditingController(text: 'user@example.com');
+  final TextEditingController _passwordController =
+      TextEditingController(text: '1234');
   String? _errorMessage;
 
   void _handleLogin() {
-  final email = _emailController.text.trim();
-  final password = _passwordController.text;
-
-  if (email.isEmpty || password.isEmpty) {
-    setState(() {
-      _errorMessage = 'กรุณากรอกอีเมลและรหัสผ่านให้ครบ';
-    });
-    return;
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email == 'user@example.com' && password == '1234') {
+      widget.onLoginSuccess(email);
+    } else {
+      setState(() => _errorMessage = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+    }
   }
-
-  // ✅ แค่กรอกครบก็ถือว่าล็อกอินสำเร็จ
-  widget.onLoginSuccess(email);
-}
-
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.grey[850],
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Text('Welcome Back!', style: TextStyle(fontSize: 18)),
-              SizedBox(height: 8),
-              Text('Login to continue', style: TextStyle(color: Colors.grey)),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _emailController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: Colors.grey),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueAccent),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              SizedBox(height: 12),
-              TextFormField(
-                controller: _passwordController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: Colors.grey),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueAccent),
-                  ),
-                ),
-                obscureText: true,
-              ),
-              SizedBox(height: 12),
-              if (_errorMessage != null)
-                Text(
-                  _errorMessage!,
-                  style: TextStyle(color: Colors.redAccent),
-                ),
-              SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: _handleLogin,
-                child: Text('ลงชื่อเข้าใช้'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                ),
-              ),
-            ],
-          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: _emailController,
+          decoration: const InputDecoration(labelText: 'อีเมล'),
         ),
-      ),
-    );
-  }
-}
-
-class ProfileSection extends StatelessWidget {
-  final String userEmail;
-
-  const ProfileSection({required this.userEmail});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[850],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: Colors.blueAccent,
-            child: Icon(Icons.person, color: Colors.white),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _passwordController,
+          obscureText: true,
+          decoration: const InputDecoration(labelText: 'รหัสผ่าน'),
+        ),
+        if (_errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              _errorMessage!,
+              style: const TextStyle(color: Colors.redAccent),
+            ),
           ),
-          SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(userEmail, style: TextStyle(fontSize: 16)),
-              Text('Your profile summary', style: TextStyle(color: Colors.grey)),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class TodoCard extends StatelessWidget {
-  final String task;
-
-  const TodoCard({required this.task});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.grey[800],
-      margin: EdgeInsets.symmetric(vertical: 6),
-      child: ListTile(
-        title: Text(task),
-        trailing: Icon(Icons.check_circle_outline, color: Colors.green),
-      ),
-    );
-  }
-}
-
-class GlowButton extends StatelessWidget {
-  final String text;
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  const GlowButton({required this.text, required this.icon, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      ),
-      icon: Icon(icon),
-      label: Text(text),
-      onPressed: onPressed,
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: _handleLogin,
+          child: const Text('เข้าสู่ระบบ'),
+        ),
+      ],
     );
   }
 }
